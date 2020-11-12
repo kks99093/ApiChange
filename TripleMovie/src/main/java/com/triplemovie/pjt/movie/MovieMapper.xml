@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Config 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.triplemovie.pjt.movie.MovieMapper">
+	<insert id="insCmt" parameterType="CmtVO">
+		INSERT INTO t_cmt
+		(cd,i_user,ctnt)
+		VALUES
+		(#{cd}, #{i_user}, #{ctnt})
+	</insert>
+	<insert id="insMain">
+		INSERT INTO main_data
+		(main_dt)
+		VALUES
+		('1')
+	</insert>
+	<insert id="insFavorite">
+		INSERT INTO t_cmt_favorite
+		(i_cmt, i_user, seq)
+		SELECT
+		#{i_cmt},#{i_user},ifnull(MAX(seq),0)+1 
+		FROM t_cmt_favorite;
+	</insert>
+	<select id="insTicketing" resultType="Integer">
+		INSERT INTO t_user_ticket
+		(i_user,movieCd, room, r_dt, s_dt, title)
+		VALUES
+		(#{i_user},#{movieCd}, #{room}, #{r_dt}, #{s_dt}, #{title})
+		RETURNING i_ticket
+	</select>
+	<insert id="insSeats">
+		INSERT INTO t_user_seats
+		(i_ticket,seat,seq)
+		SELECT
+		#{i_ticket}, #{seat},ifnull(MAX(seq),0)+1
+		FROM t_user_seats
+	</insert>
+	
+	<update id="updMain" parameterType="String">
+		UPDATE main_data
+		SET main_dt = #{mainData}
+		WHERE i_main = (SELECT MAX(i_main) FROM main_data);
+	</update>
+	<select id="selMain" resultType="String">
+		SELECT main_dt FROM main_data A
+		LEFT JOIN(
+		SELECT max(i_main) AS i_main FROM main_data
+		)B
+		ON A.i_main = B.i_main
+		WHERE A.i_main = B.i_main;
+	</select>
+	<select id="selCmt" resultType="CmtDMI">
+		SELECT DISTINCT A.i_cmt, A.ctnt, B.nick_nm,
+		(SELECT COUNT(i_cmt) FROM t_cmt_favorite WHERE i_cmt = A.i_cmt) AS ctnt_cnt
+		FROM t_cmt A
+		LEFT JOIN t_user B
+		ON B.i_user = A.i_user
+		LEFT JOIN t_cmt_favorite C
+		ON C.i_cmt = A.i_cmt
+		WHERE A.cd = #{movieCd}
+		ORDER BY ctnt_cnt DESC
+	</select>
+	<select id="selCmtFavorite" resultType="CmtVO">
+		SELECT B.i_cmt, B.seq, B.i_user FROM t_cmt A
+		LEFT JOIN t_cmt_favorite B
+		ON A.i_cmt = B.i_cmt
+		WHERE A.cd = #{movieCd}	and B.i_user = #{i_user}
+	</select>
+	<select id="selRoomTime" resultType="CinemaVO">
+		SELECT max(e_dt) AS e_dt FROM test1
+		<choose>
+			<when test="room > 0">
+			WHERE room = #{room} AND r_dt = #{r_dt}
+			</when>
+			<otherwise>
+			WHERE r_dt = #{r_dt}
+			</otherwise>
+		</choose>		
+	</select>
+	
+	<insert id="insCinema">
+		insert into test1(movie_cd, room, s_dt, e_dt, r_dt)
+		values
+		(#{movie_cd}, #{room}, #{s_dt}, #{e_dt}, #{r_dt})
+	</insert>
+	
+	<!-- 영화 날짜 select -->
+	<select id="selR_dt" resultType="CinemaVO">
+		SELECT r_dt FROM test1
+		GROUP BY r_dt
+	</select>
+	
+	<!-- 영화 시간 select -->
+	<select id="selTime" resultType="CinemaVO">
+		SELECT s_dt FROM test1
+		WHERE r_dt = #{r_dt} AND room = #{room}
+	</select>
+	
+	
+	<delete id="delFavorite">
+		DELETE FROM t_cmt_favorite WHERE seq = #{seq} AND i_user = #{i_user}
+	</delete>
+</mapper>

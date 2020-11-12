@@ -1,0 +1,49 @@
+@charset "UTF-8";
+
+body {
+	background: #4e4e4e;
+}
+.ticket_container {
+	background: #4e4e4e;
+	margin: 0 auto;
+	width: 1200px;
+	height: 80%;
+	margin-top: 50px;
+}
+
+.movie_select, .cinema_select, .time_select, .day_select {
+	background: #fff;
+	position: relative;
+	height: 600px;
+	float: left; 
+	width: 24%;
+} 
+.cinema_select, .time_select, .movie_select {
+	border-left:0.1px solid #cecece;
+}
+
+
+.day_div, .movie_div, .cinema_div, .time_div, .title {
+	display: table;
+}
+
+.day_div, .movie_div, .cinema_div, .time_div {
+	text-align: center;
+	line-heigth: 7%;
+	width: 100%;
+	height: 7%;
+}
+
+span {
+	width:100%;
+	height: 100%;
+	display: table-cell;
+	vertical-align: middle;
+}
+
+.title {
+	width: 100%;
+	height: 10%;
+	background: #111111;
+	color: #eee;
+}
